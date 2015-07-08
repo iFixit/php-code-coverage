@@ -193,8 +193,11 @@ class PHP_CodeCoverage_Filter
     /**
      * Checks whether or not a file is filtered.
      *
-     * When the whitelist is empty (default), blacklisting is used.
-     * When the whitelist is not empty, whitelisting is used.
+     * When the whitelist is empty (default), blacklisting is used alone.
+     * When the whitelist is not empty, the blacklist is applied after the
+     * whitelist. For example, if a directory is whitelisted and a subdirectory
+     * of it is blacklisted, the subdirectory will be filtered along with
+     * everything not in its parent directory.
      *
      * @param  string                     $filename
      * @return bool
@@ -208,11 +211,13 @@ class PHP_CodeCoverage_Filter
 
         $filename = realpath($filename);
 
+        if (isset($this->blacklistedFiles[$filename])) {
+            return true;
+        }
+
         if (!empty($this->whitelistedFiles)) {
             return !isset($this->whitelistedFiles[$filename]);
         }
-
-        return isset($this->blacklistedFiles[$filename]);
     }
 
     /**
